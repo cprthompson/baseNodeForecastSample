@@ -8,7 +8,7 @@ class ApiCoordinatior {
     static async getForecastByAddress(urlString) {
         var lagLong = await new LocationAPI().getLatLongByAddress(this.#parseAddress(urlString));
         var forecast = await new WeatherAPI().getForecastByLatLong(lagLong);
-        return JSON.stringify(forecast);
+        return JSON.stringify(this.#simplifyForecastResponse(forecast));
     }
 
     static #parseAddress(urlString) {
@@ -18,6 +18,19 @@ class ApiCoordinatior {
             city: parsedURL.get("city"),
             state: parsedURL.get("state")
         };
+    }
+
+    static #simplifyForecastResponse(forecast) {
+        let simpleForecast = [];
+        Array.from(forecast).forEach(element => {
+            let incomingDateTime = new Date(element.startTime);
+            simpleForecast.push({
+                dayName: element.name,
+                date: `${incomingDateTime.getMonth() + 1}-${incomingDateTime.getDate()}-${incomingDateTime.getFullYear()}`,
+                forecast: element.detailedForecast
+            })
+        });
+        return simpleForecast;
     }
 }
 
